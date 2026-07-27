@@ -2,6 +2,9 @@
 
 This is a compact standalone power and SWR meter designed for field use. The rectifier diodes used in this design have relatively flat performance up to 50MHz, so it is able to cover all of the HF bands. It is built around the ATtiny 3224 microcontroller, so writing your own or modifying the existing code is easy. 
 
+![Render Main](Images/QRP%20Power%20and%20SWR%20Meter%20Render%20Main.png)
+![Render Connectors](Images/QRP%20Power%20and%20SWR%20Meter%20Render%20Connectors.png)
+
 ## Features
 
 - Accurate Power and SWR measurements for HF + 6m
