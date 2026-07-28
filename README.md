@@ -12,6 +12,8 @@ This is a compact standalone power and SWR meter designed for field use. The rec
 - 25w max power limit
 - Built in 1000mAh battery for over 40 hours of continuous use
 - USB-C charging
+  - LED turns on when charging, and will turn off when full
+  - Can charge while the switch is in the off position
 - Reverse polarity protection for the battery
 - Watts or dBm display
 - Built in calibration mode (Displays raw ADC counts, more info below)
