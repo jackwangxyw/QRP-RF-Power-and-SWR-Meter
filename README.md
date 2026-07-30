@@ -26,24 +26,23 @@ To use the meter, simply flip the switch to the on position, plug in your RF inp
 ## Calibration
 This board has a built in calibration mode that you can enter by long pressing the tactile button on the PCB. This mode will display the raw adc counts for the VFWD and VREV that the microcontroller reads. To be clear, you **DO NOT** need to do this in normal use, the default values in the code have already been tested and are accurate. Only do this if you have the precision equipment to do so and want to gain that last 1-5% of accuracy. (That accuracy will probably be gone anyway as the diodes' responses vary with temperature and other factors anyway). 
 
-
 If you notice that your values are off by a consistent amount at every power level, there is a multiplier value you can change in the code. (Again, this is **NOT NEEDED** for most people, only for the edge cases where that batch of diodes may be off) (Only do this if you notice something consistently wrong when comparing with precision equipment)
-
-## Assembly and Programming
-Assembly is quite simple. All of the SMD parts are 0805 size or smaller so it is easy to hand solder without a hot plate. There are plenty of tutorials on how to do this online. Some tips that I can give are to use LOTS of flux. (Seriously, this makes life so much easier) Simply solder all of the parts onto the PCB. When you solder the connector to the OLED display, make sure to double check the pinout of your specific display and match it to the PCB silkscreen. Some of the displays may have different pinouts. 
-
-
-If you do decide to use the 3D printed case, simply put in the 8 heat set inserts on each side, and screw everything together, its pretty self explanatory. You may want to attach the battery to the top panel with some glue or double sided tape to prevent it from sliding/rattling around inside of the case.
-
-
-Programming is also easy, all you need is a [UPDI programmer](https://www.adafruit.com/product/5879?srsltid=AfmBOoosIHZ5qCXL0qs-41c_Th3voxFLiswGlyJfjmZCHLlL7hfAid7V) and a computer. Simply plug the programmer into your computer, connect the programmer's 3 pins into the pcb, and use PlatformIO to flash the board.  
-
 
 To calibrate the power measurements, take a RF source of known power output and frequency and plug this into the RF input, plug a dummy load into the RF output, transmit at many different power levels, record the VFWD ADC count and the power you inputted for every datapoint. Take the values you get and input them into [Desmos](https://www.desmos.com/calculator) in a table, then run a quartic regression: y1 ~ ax1^4 + bx1^3 + cx1^2 + dx1 + e. Take the a, b, c, d, and e values you obtain and input them into the code. This "calibration factor" will work for both power and SWR readings. 
 
-
 If you want to test SWR, you can put loads of known resistance on the RF output to check the reported value. (Eg: 50Ω = 1:1 100Ω = 2:1, 150Ω = 3:1, etc)
- 
+
+## Assembly
+Assembly is quite simple. All of the SMD parts are 0805 size or smaller so it is easy to hand solder without a hot plate. There are plenty of tutorials on how to do this online. Some tips that I can give are to use LOTS of flux. (Seriously, this makes life so much easier) Simply solder all of the parts onto the PCB. When you solder the connector to the OLED display, make sure to double check the pinout of your specific display and match it to the PCB silkscreen. Some of the displays may have different pinouts. 
+
+There is also an [interactive BOM](Interactive%20BOM.html) which helps greatly with locating where parts go. Simply download the file to your computer, then simply opening the file will open up the interactive BOM in your web browser.
+
+If you do decide to use the 3D printed case, simply put in the 8 heat set inserts on each side, and screw everything together, its pretty self explanatory. You may want to attach the battery to the top panel with some glue or double sided tape to prevent it from sliding/rattling around inside of the case.
+
+## Programming
+
+Programming is easy, all you need is a [UPDI programmer](https://www.adafruit.com/product/5879?srsltid=AfmBOoosIHZ5qCXL0qs-41c_Th3voxFLiswGlyJfjmZCHLlL7hfAid7V) and a computer. Simply plug the programmer into your computer, connect the programmer's 3 pins into the PCB, and use PlatformIO to flash the board.  
+
 ## Ordering PCBs
 This design needs 1 or 2 pcbs depending on whether or not you build the 3D printed enclosure. You will need the Main PCB and the optional Connector Panel PCB. The gerber files found for these are in the [Gerbers Folder](Gerbers). I like to order from JLCPCB as they have good quality and are relatively cheap, I got 5 of each of these PCBs for under $20 shipped. The Main PCB is a 4 layer PCB and needs the JLC04161H-7628 stackup or similar. The connector panel is just a normal 2 layer PCB. Everything else can be the JLCPCB defaults. (You can change the solder mask color to whatever suits your preference)
 ## BOM
