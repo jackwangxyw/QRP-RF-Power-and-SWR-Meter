@@ -2,6 +2,9 @@
 
 This is a compact standalone power and SWR meter designed for field use. The rectifier diodes used in this design have relatively flat performance up to 50MHz, so it is able to cover all of the HF bands. It is built around the ATtiny 3224 microcontroller, so writing your own or modifying the existing code is easy. 
 
+![Render Main](Images/QRP%20Power%20and%20SWR%20Meter%20Render%20Main.png)
+![Render Connectors](Images/QRP%20Power%20and%20SWR%20Meter%20Render%20Connectors.png)
+
 ## Features
 
 - Accurate Power and SWR measurements for HF + 6m
@@ -9,14 +12,22 @@ This is a compact standalone power and SWR meter designed for field use. The rec
 - 25w max power limit
 - Built in 1000mAh battery for over 40 hours of continuous use
 - USB-C charging
+  - LED turns on when charging, and will turn off when full
+  - Can charge while the switch is in the off position
 - Reverse polarity protection for the battery
 - Watts or dBm display
 - Built in calibration mode (Displays raw ADC counts, more info below)
 - Basic warning features
   - Screen flashes when SWR or power goes over a certain threshold
  
-## Ordering PCBs
-This design needs 1 or 2 pcbs depending on whether or not you build the 3D printed enclosure. You will need the Main PCB and the optional Connector Panel PCB. The gerber files found for these are in the [Gerbers Folder](Gerbers). I like to order from JLCPCB as they have good quality and are relatively cheap, I got 5 of each of these PCBs for under $20 shipped. The Main PCB is a 4 layer PCB and needs the JLC04161H-7628 stackup or similar. The connector panel is just a normal 2 layer PCB. Everything else can be the JLCPCB defaults. (You can change the solder mask color to whatever suits your preference)
+## Usage
+To use the meter, simply flip the switch to the on position, plug in your RF input and output, and you're off to the races. If you want to switch the unit for power measurements between Watts and dBm, simply short press the tactile button.
+
+## Calibration
+This board has a built in calibration mode that you can enter by long pressing the tactile button on the PCB. This mode will display the raw adc counts for the VFWD and VREV that the microcontroller reads. To be clear, you **DO NOT** need to do this in normal use, the default values in the code have already been tested and are accurate. Only do this if you have the precision equipment to do so and want to gain that last 1-5% of accuracy. (That accuracy will probably be gone anyway as the diodes' responses vary with temperature and other factors anyway). 
+
+
+If you notice that your values are off by a consistent amount at every power level, there is a multiplier value you can change in the code. (Again, this is **NOT NEEDED** for most people, only for the edge cases where that batch of diodes may be off) (Only do this if you notice something consistently wrong when comparing with precision equipment)
 
 ## Assembly and Programming
 Assembly is quite simple. All of the SMD parts are 0805 size or smaller so it is easy to hand solder without a hot plate. There are plenty of tutorials on how to do this online. Some tips that I can give are to use LOTS of flux. (Seriously, this makes life so much easier) Simply solder all of the parts onto the PCB. When you solder the connector to the OLED display, make sure to double check the pinout of your specific display and match it to the PCB silkscreen. Some of the displays may have different pinouts. 
@@ -27,23 +38,16 @@ If you do decide to use the 3D printed case, simply put in the 8 heat set insert
 
 Programming is also easy, all you need is a [UPDI programmer](https://www.adafruit.com/product/5879?srsltid=AfmBOoosIHZ5qCXL0qs-41c_Th3voxFLiswGlyJfjmZCHLlL7hfAid7V) and a computer. Simply plug the programmer into your computer, connect the programmer's 3 pins into the pcb, and use PlatformIO to flash the board.  
 
-## Usage
-To use the meter, simply flip the switch to the on position, plug in your RF input and output, and you're off to the races. If you want to switch the unit for power measurements between Watts and dBm, simply short press the tactile button.
-
-## Calibration
-This board has a built in calibration mode that you can enter by long pressing the tactile button on the PCB. This mode will display the raw adc counts for the VFWD and VREV that the microcontroller reads. To be clear, you **DO NOT** need to do this in normal use, the default values in the code have already been tested and are accurate. Only do this if you have the precision equipment to do so and want to gain that last 1-5% of accuracy. (That accuracy will probably be gone anyway as the diodes' responses vary with temperature and other factors anyway). 
-
-
-If you notice that your values are off by a consistent amount at every power level, there is a multiplier value you can change in the code. (Again, this is **NOT NEEDED** for most people, only for the edge cases where that batch of diodes may be off) (Only do this if you notice something consistently wrong when comparing with precision equipment)
-
 
 To calibrate the power measurements, take a RF source of known power output and frequency and plug this into the RF input, plug a dummy load into the RF output, transmit at many different power levels, record the VFWD ADC count and the power you inputted for every datapoint. Take the values you get and input them into [Desmos](https://www.desmos.com/calculator) in a table, then run a quartic regression: y1 ~ ax1^4 + bx1^3 + cx1^2 + dx1 + e. Take the a, b, c, d, and e values you obtain and input them into the code. This "calibration factor" will work for both power and SWR readings. 
 
 
 If you want to test SWR, you can put loads of known resistance on the RF output to check the reported value. (Eg: 50Ω = 1:1 100Ω = 2:1, 150Ω = 3:1, etc)
  
+## Ordering PCBs
+This design needs 1 or 2 pcbs depending on whether or not you build the 3D printed enclosure. You will need the Main PCB and the optional Connector Panel PCB. The gerber files found for these are in the [Gerbers Folder](Gerbers). I like to order from JLCPCB as they have good quality and are relatively cheap, I got 5 of each of these PCBs for under $20 shipped. The Main PCB is a 4 layer PCB and needs the JLC04161H-7628 stackup or similar. The connector panel is just a normal 2 layer PCB. Everything else can be the JLCPCB defaults. (You can change the solder mask color to whatever suits your preference)
 ## BOM
-A CSV file is included with all of the parts, specs and links. One of these meters can be built for anywhere between $30-$50 each depending on where you live and what parts you have already and how many you decide to build.   
+A [CSV](RF%20SWR%20and%20Power%20Meter%20BOM.csv) file is included with all of the parts, specs and links. One of these meters can be built for anywhere between $30-$50 each depending on where you live and what parts you have already and how many you decide to build.   
 
 PCB parts:
 | Reference | Qty | Value | Footprint | Recommended Part |
