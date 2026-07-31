@@ -9,8 +9,11 @@ This is a compact standalone power and SWR meter designed for field use. The rec
 
 - Accurate Power and SWR measurements for HF + 6m
 - 0.96in OLED display
+  - Numerical and graph views for power and SWR
+  - Peak hold indicator on power bar
 - 25w max power limit
-- Built in 1000mAh battery for over 40 hours of continuous use
+- Built in 1000mAh battery for over 40 hours of continuous use, 120 hours of realistic field use, and months on standby
+- Auto dim, screen off, and standby modes, turned on by RF
 - USB-C charging
   - LED turns on when charging, and will turn off when full
   - Can charge while the switch is in the off position
@@ -18,19 +21,27 @@ This is a compact standalone power and SWR meter designed for field use. The rec
 - Watts or dBm display
 - Built in calibration mode (Displays raw ADC counts, more info below)
 - Basic warning features
-  - Screen flashes when SWR or power goes over a certain threshold
+  - When SWR or power goes over a certain threshold, that number will blink as a warning.
  
 ## Usage
-To use the meter, simply flip the switch to the on position, plug in your RF input and output, and you're off to the races. If you want to switch the unit for power measurements between Watts and dBm, simply short press the tactile button.
+To use the meter, simply flip the switch to the on position, plug in your RF input and output, and you're off to the races. If you want to switch the unit for power measurements between Watts and dBm, simply short press the tactile button. When no RF is passed thruugh the meter, the screen will dim, then turn off, then go into standby mode in intervals set in the [Code/SRC/config.h](Code/SRC/config.h) file. Passing RF through the meter will turn the screen back on and put it into active mode. You can also slide the switch off and back on again to put the device back into active mode as well. This features is just an auto standby, not a true auto off, that is handled with the physical slide switch.
+
+When the device is turned on via the switch, a splash screen shows indicating the software version and battery voltage. Then it jumps to the main screen. 
+
+![Main screen](Images/QRP%20Power%20and%20SWR%20Meter%20Screen%20Main.png)
 
 ## Calibration
-This board has a built in calibration mode that you can enter by long pressing the tactile button on the PCB. This mode will display the raw adc counts for the VFWD and VREV that the microcontroller reads. To be clear, you **DO NOT** need to do this in normal use, the default values in the code have already been tested and are accurate. Only do this if you have the precision equipment to do so and want to gain that last 1-5% of accuracy. (That accuracy will probably be gone anyway as the diodes' responses vary with temperature and other factors anyway). 
+This board has a built in calibration mode that you can enter by long pressing the tactile button on the PCB. This mode will display the raw adc counts for the VFWD and VREV that the microcontroller reads. To be clear, you **DO NOT** need to do this in normal use, the default values in the code have already been tested and are accurate. Only do this if you have the precision equipment to do so and want to gain that last 1-5% of accuracy. (That accuracy will probably be gone anyway as the diodes' responses vary with temperature and other factors anyway). You also check the resting VFWD count of WAKE_COUNTS in [Code/SRC/config.h](Code/SRC/config.h). The defualt value should work, but if you notice your value is higher than the default, the device will never go into standby, so you can change that.
 
-If you notice that your values are off by a consistent amount at every power level, there is a multiplier value you can change in the code. (Again, this is **NOT NEEDED** for most people, only for the edge cases where that batch of diodes may be off) (Only do this if you notice something consistently wrong when comparing with precision equipment)
+If you notice that your values are off by a consistent amount at every power level, you can change the CAL_MULTIPLIER in [Code/SRC/config.h](Code/SRC/config.h). (Again, this is **NOT NEEDED** for most people, only for the edge cases where that batch of diodes may be off) (Only do this if you notice something consistently wrong when comparing with precision equipment)
 
-To calibrate the power measurements, take a RF source of known power output and frequency and plug this into the RF input, plug a dummy load into the RF output, transmit at many different power levels, record the VFWD ADC count and the power you inputted for every datapoint. Take the values you get and input them into [Desmos](https://www.desmos.com/calculator) in a table, then run a quartic regression: y1 ~ ax1^4 + bx1^3 + cx1^2 + dx1 + e. Take the a, b, c, d, and e values you obtain and input them into the code. This "calibration factor" will work for both power and SWR readings. 
+To calibrate the power measurements, take a RF source of known power output and frequency and plug this into the RF input, plug a dummy load into the RF output, transmit at many different power levels, record the VFWD ADC count and the power you inputted for every datapoint. Take the values you get and input them into [Desmos](https://www.desmos.com/calculator) in a table, then run a quartic regression: y1 ~ ax1^4 + bx1^3 + cx1^2 + dx1 + e. Take the a, b, c, d, and e values you obtain and input them in CAL_A through CAL_E in [Code/SRC/config.h](Code/SRC/config.h). This "calibration factor" will work for both power and SWR readings. 
+
+There are two hard limits with this hardware. The bottom limit is set by the 1N577 rectifier diodes. They need ~0.33 V to conduct, so below ~0.25 W, readings will be inaccurate, power levels under ~0.1 W will read as 0. The top end limit is set at an ABSOLUTE max of 28.7v, this is due to the 2.5v adc reference and maximum of 4095 ADC counts.
 
 If you want to test SWR, you can put loads of known resistance on the RF output to check the reported value. (Eg: 50Ω = 1:1 100Ω = 2:1, 150Ω = 3:1, etc)
+
+![Calibration screen](Images/QRP%20Power%20and%20SWR%20Meter%20Screen%20Calibration.png)
 
 ## Assembly
 Assembly is quite simple. All of the SMD parts are 0805 size or smaller so it is easy to hand solder without a hot plate. There are plenty of tutorials on how to do this online. Some tips that I can give are to use LOTS of flux. (Seriously, this makes life so much easier) Simply solder all of the parts onto the PCB. When you solder the connector to the OLED display, make sure to double check the pinout of your specific display and match it to the PCB silkscreen. Some of the displays may have different pinouts. 
@@ -41,7 +52,17 @@ If you do decide to use the 3D printed case, simply put in the 8 heat set insert
 
 ## Programming
 
-Programming is easy, all you need is a [UPDI programmer](https://www.adafruit.com/product/5879?srsltid=AfmBOoosIHZ5qCXL0qs-41c_Th3voxFLiswGlyJfjmZCHLlL7hfAid7V) and a computer. Simply plug the programmer into your computer, connect the programmer's 3 pins into the PCB, and use PlatformIO to flash the board.  
+Programming is easy, all you need is a [UPDI programmer](https://www.adafruit.com/product/5879?srsltid=AfmBOoosIHZ5qCXL0qs-41c_Th3voxFLiswGlyJfjmZCHLlL7hfAid7V) and a computer. Simply plug the programmer into your computer, connect the programmer's 3 pins into the PCB, and use PlatformIO to flash the board. The MCU runs at 10MHz because the ATtiny is only rated for 20MHz with a VDD above 4.5 V.
+
+For the user interface, there are two fonts available to pick from in the [Code/SRC/config.h](Code/SRC/config.h) file. You can change BIG_FONT between two font styles, choose whichever one suits your liking.
+
+For REV 2 PCBs, the screen is software I2C because I totally missed the fact that the ATtiny supports hardware I2C and put them on the wrong pins. This works fine, but will likely be fixed in a future PCB revision.
+
+```
+cd Code
+pio run            # build
+pio run -t upload  # flash over UPDI
+```
 
 ## Ordering PCBs
 This design needs 1 or 2 pcbs depending on whether or not you build the 3D printed enclosure. You will need the Main PCB and the optional Connector Panel PCB. The gerber files found for these are in the [Gerbers Folder](Gerbers). I like to order from JLCPCB as they have good quality and are relatively cheap, I got 5 of each of these PCBs for under $20 shipped. The Main PCB is a 4 layer PCB and needs the JLC04161H-7628 stackup or similar. The connector panel is just a normal 2 layer PCB. Everything else can be the JLCPCB defaults. (You can change the solder mask color to whatever suits your preference)
@@ -57,7 +78,7 @@ PCB parts:
 | D1, D2 | 2 | 1N5711 | SOD-123 | [DigiKey Link](https://www.digikey.com/en/products/detail/good-ark-semiconductor/GS1N5711W/18667513) |
 | D3 | 1 | LED Red | 1206 | [DigiKey Link](https://www.digikey.com/en/products/detail/liteon/LTST-C150KRKT/386761) |
 | IC1 | 1 | ATTINY3224 | SOIC-14 | [DigiKey Link](https://www.digikey.com/en/products/detail/microchip-technology/ATTINY3224-SSFR/17631056) |
-| IC2 | 1 | MCP73831 | TSOT-23-5 | [DigiKey Link](https://www.digikey.com/en/products/detail/microchip-technology/MCP73831T-2ACI-OT/964301) |
+| IC2 | 1 | MCP73831 | SOT-23-5 | [DigiKey Link](https://www.digikey.com/en/products/detail/microchip-technology/MCP73831T-2ACI-OT/964301) |
 | J1, J2 | 2 | BNC Connector | Molex 0731385003 | [DigiKey Link](https://www.digikey.com/en/products/detail/molex/0731385003/3303300) |
 | J3 | 1 | USBC Receptacle | GCT_USB4800-03-A | [DigiKey Link](https://www.digikey.com/en/products/detail/gct/USB4800-03-A/16688032) |
 | J4 | 1 | OLED Connector | JST B4B-XH-A | [DigiKey Link](https://www.digikey.com/en/products/detail/jst-sales-america-inc/B4B-XH-A/1651047) |

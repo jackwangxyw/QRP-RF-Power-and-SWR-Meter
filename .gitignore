@@ -5,6 +5,10 @@
 .vscode/ipch
 **/.vscode/
 
+# Local design/font tooling. Code/src/fonts_data.h is committed and the
+# firmware builds without this, so it stays out of the release.
+/tools/
+
 # For PCBs designed using KiCad: https://www.kicad.org/
 # Format documentation: https://kicad.org/help/file-formats/
 
@@ -47,3 +51,9 @@ fp-info-cache
 
 # Local project settings
 *.kicad_prl
+
+# Host test suite and screen simulator - local only, not part of the release.
+# The firmware builds without either; platformio.ini only references them from
+# the opt-in `test` and `screensim` environments.
+/Code/test/
+/Code/sim/
