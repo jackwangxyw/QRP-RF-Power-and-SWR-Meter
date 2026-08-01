@@ -9,6 +9,10 @@
 # firmware builds without this, so it stays out of the release.
 /tools/
 
+# Working notes for future board revisions - a design scratchpad, not release
+# documentation.
+/Notes/
+
 # For PCBs designed using KiCad: https://www.kicad.org/
 # Format documentation: https://kicad.org/help/file-formats/
 

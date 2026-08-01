@@ -9,7 +9,12 @@
 #include <stdint.h>
 
 // --- measurement ---------------------------------------------------------
-float countsToWatts(float counts);          // quartic calibration curve
+// dBm is the calibrated quantity - the curve is fitted in it - and watts is
+// derived. See the calibration block in config.h for why.
+float countsToDbm(float counts);            // NAN below the noise floor
+float dbmToWatts(float dbm);                // NAN in -> 0 out
+float countsToWatts(float counts);          // both of the above
+
 float computeSwr(float fwdW, float revW);   // NAN = no carrier, INF = total
 float envelopeStep(float env, float sample, float decay);  // instant attack
 

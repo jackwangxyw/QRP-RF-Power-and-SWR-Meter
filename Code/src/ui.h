@@ -8,13 +8,14 @@
 #include "compat.h"
 
 struct MeterState {
-    float    watts;        // forward power
+    float    watts;        // forward power, derived from dbm
+    float    dbm;          // the calibrated quantity; NAN = no signal
     float    swr;          // NAN = no carrier, INFINITY = total reflection
     float    battVolts;
     float    peakFrac;     // peak marker, 0..1 of PWR_BAR_FULL_SCALE; 0 = none
     uint16_t fwdRaw;       // rounded 12-bit counts, for calibration mode
     uint16_t revRaw;
-    bool     dbm;          // unit toggle
+    bool     dbmMode;      // unit toggle
     bool     blankPwr;     // warning blink, off phase
     bool     blankSwr;
 };

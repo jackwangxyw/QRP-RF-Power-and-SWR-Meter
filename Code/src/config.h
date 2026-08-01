@@ -88,22 +88,48 @@
 // ---------------------------------------------------------------------------
 //  Calibration
 // ---------------------------------------------------------------------------
-//      P(watts) = A*x^4 + B*x^3 + C*x^2 + D*x + E      (x = raw 12-bit count)
+//      dBm = A*L^4 + B*L^3 + C*L^2 + D*L + E     where L = log10(raw count)
+//
+//  Watts is then derived: W = 10^((dBm - 30) / 10).
+//
+//  Two deliberate choices here, both worth understanding before re-fitting.
+//
+//  1. Fit dBm, not watts. Least squares on watts weights absolute error, so a
+//     0.3 W miss at 25 W outweighs every point below 1 W put together and the
+//     fit simply ignores the bottom of the range. dBm is a relative measure,
+//     so every decade gets equal weight.
+//
+//  2. Fit against log10(counts), not counts. A quartic in raw counts cannot
+//     follow a log curve over a 200:1 span - measured against the previous
+//     watts-domain curve it misses by up to 5.9 dB. In log10(counts) the same
+//     quartic lands within 0.11 dB worst case, 0.013 dB above 0.25 W.
 //
 //  One curve serves both channels - the detector chains are identical
 //  (same diode, R1||R2 == R5||R6 == 50R, R3/R4 == R7/R8).
 //
-//  NOTE: because the fit is against raw counts, these constants are tied to
-//  the 2.5 V reference and the /2 divider. Change either and they are wrong.
+//  To calibrate: record dBm against raw count, then in Desmos run
+//      y1 ~ a(log(x1))^4 + b(log(x1))^3 + c(log(x1))^2 + d*log(x1) + e
+//  with x1 = counts and y1 = dBm. Paste a..e into A..E below.
+//
+//  NOTE: the fit is against raw counts, so these constants are tied to the
+//  2.5 V reference and the /2 divider. Change either and they are wrong.
+//
+//  The shipped values are a refit of the previous watts-domain curve into this
+//  form - same response, new representation. They are still borrowed, not
+//  measured, and want replacing with real bench data.
 // ---------------------------------------------------------------------------
-#define CAL_A  0.0f
-#define CAL_B  0.0f
-#define CAL_C  1.4901e-6f
-#define CAL_D  9.17017e-4f
-#define CAL_E  0.0f
+#define CAL_A  -3.558687e-01f
+#define CAL_B   3.941184e+00f
+#define CAL_C  -1.359802e+01f
+#define CAL_D   2.977850e+01f
+#define CAL_E  -1.072073e+01f
 
-#define CAL_MULTIPLIER     1.0f   // trim for a consistent percentage error
-#define NOISE_FLOOR_COUNTS 20     // below this, force zero
+//  Trim for a consistent error. In a dBm-native curve a fixed percentage error
+//  is a fixed dB offset, so this is simply added: +0.5 makes every reading
+//  0.5 dB higher. (Replaces the old CAL_MULTIPLIER, which was a linear factor
+//  on watts and no longer fits the arithmetic.)
+#define CAL_OFFSET_DB      0.0f
+#define NOISE_FLOOR_COUNTS 20     // below this, no signal
 
 // ---------------------------------------------------------------------------
 //  ADC

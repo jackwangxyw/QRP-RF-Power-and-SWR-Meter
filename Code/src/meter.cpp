@@ -4,16 +4,24 @@
 
 // --- measurement ---------------------------------------------------------
 
-float countsToWatts(float x) {
-    if (x < (float)NOISE_FLOOR_COUNTS) return 0.0f;
-    float p = CAL_A;
-    p = p * x + CAL_B;
-    p = p * x + CAL_C;
-    p = p * x + CAL_D;
-    p = p * x + CAL_E;
-    p *= CAL_MULTIPLIER;
-    return p > 0.0f ? p : 0.0f;          // a polynomial fit can dip negative
+float countsToDbm(float x) {
+    if (x < (float)NOISE_FLOOR_COUNTS) return NAN;
+    float l = log10f(x);
+    float d = CAL_A;
+    d = d * l + CAL_B;
+    d = d * l + CAL_C;
+    d = d * l + CAL_D;
+    d = d * l + CAL_E;
+    return d + CAL_OFFSET_DB;
 }
+
+float dbmToWatts(float dbm) {
+    if (isnan(dbm)) return 0.0f;
+    float w = powf(10.0f, (dbm - 30.0f) * 0.1f);
+    return w > 0.0f ? w : 0.0f;          // a polynomial fit can dip negative
+}
+
+float countsToWatts(float x) { return dbmToWatts(countsToDbm(x)); }
 
 float computeSwr(float fwd, float rev) {
     if (fwd < SWR_MIN_POWER) return NAN;

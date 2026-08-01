@@ -125,12 +125,12 @@ static void swrBar(float swr) {
 // Past POWER_LIMIT_WATTS the reading is meaningless anyway - the ADC saturates
 // around 28.7 W - so show LIM rather than a number that cannot be trusted. The
 // threshold is on watts, so dBm switches over at the same actual power.
-static void powerText(char *val, char *unit, float w, bool dbm) {
+static void powerText(char *val, char *unit, float w, float dbm, bool dbmMode) {
     bool lim = w >= POWER_LIMIT_WATTS;
-    if (dbm) {
+    if (dbmMode) {
         if (lim)            { val[0]='L'; val[1]='I'; val[2]='M'; val[3]=0; }
         else if (w <= 0.0f) { val[0]='-'; val[1]='-'; val[2]='-'; val[3]=0; }
-        else                fmt(val, 10.0f * log10f(w) + 30.0f, 1);
+        else                fmt(val, dbm, 1);      // already the native quantity
         unit[0]='d'; unit[1]='B'; unit[2]='m'; unit[3]=0;
         return;
     }
@@ -182,7 +182,7 @@ void meter(const MeterState &s) {
     battery(OLED_W - BATT_W - UI_MARGIN, UI_MARGIN, battPercent(s.battVolts));
 
     // power row
-    powerText(val, unit, s.watts, s.dbm);
+    powerText(val, unit, s.watts, s.dbm, s.dbmMode);
     // Right-aligned like a reading, including LIM. Only the "---" no-signal
     // placeholder centres. (val[1] distinguishes it from a negative dBm.)
     bool placeholder = (val[0] == '-' && val[1] == '-');

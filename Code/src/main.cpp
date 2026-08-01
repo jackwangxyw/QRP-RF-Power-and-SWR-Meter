@@ -222,12 +222,13 @@ void loop() {
     if (!haveOled || pstate >= PWR_BLANK) return;
 
     MeterState s;
-    s.watts     = countsToWatts(fwdEnv);
+    s.dbm       = countsToDbm(fwdEnv);       // the calibrated quantity
+    s.watts     = dbmToWatts(s.dbm);
     s.swr       = computeSwr(s.watts, countsToWatts(revEnv));
     s.battVolts = battV;
     s.fwdRaw    = (uint16_t)(fwdEnv + 0.5f);
     s.revRaw    = (uint16_t)(revEnv + 0.5f);
-    s.dbm       = dbmMode;
+    s.dbmMode   = dbmMode;
 
     bool warnPwr = s.watts > POWER_WARN_THRESHOLD;
     bool warnSwr = !isnan(s.swr) && (isinf(s.swr) || s.swr > SWR_WARN_THRESHOLD);
