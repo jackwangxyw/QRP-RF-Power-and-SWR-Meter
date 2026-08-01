@@ -1,4 +1,4 @@
-# QRP RF Power and SWR Meter - Rev2
+# QRP RF Power and SWR Meter
 
 This is a compact standalone power and SWR meter designed for field use. The rectifier diodes used in this design have relatively flat performance up to 50MHz, so it is able to cover all of the HF bands. It is built around the ATtiny 3224 microcontroller, so writing your own or modifying the existing code is easy. 
 
@@ -23,6 +23,11 @@ This is a compact standalone power and SWR meter designed for field use. The rec
 - Basic warning features
   - When SWR or power goes over a certain threshold, that number will blink as a warning.
  
+
+## Changelog
+Rev 2 - Switched to the ATtiny 3224 microcontroller from the old and obsolete ATmega 328p, switched to a 4 layer board, added onboard lipo charging, connectorized the OLED, among various other small improvements.
+
+
 ## Usage
 To use the meter, simply flip the switch to the on position, plug in your RF input and output, and you're off to the races. If you want to switch the unit for power measurements between Watts and dBm, simply short press the tactile button. When no RF is passed thruugh the meter, the screen will dim, then turn off, then go into standby mode in intervals set in the [Code/SRC/config.h](Code/SRC/config.h) file. Passing RF through the meter will turn the screen back on and put it into active mode. You can also slide the switch off and back on again to put the device back into active mode as well. This features is just an auto standby, not a true auto off, that is handled with the physical slide switch.
 
