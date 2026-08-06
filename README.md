@@ -111,6 +111,6 @@ Other Parts:
 | 0.96in OLED | 1 | [Amazon Link](https://www.amazon.com/Display-SSD1306-Self-Luminous-Compatible-Raspberry/dp/B0GBWXTR1Z/ref=sr_1_13?) |
 | Battery | 1 | [Amazon Link](https://www.amazon.com/dp/B0DPZVBKMY?) |
 | M2.5x5mm Button Head | 5 | [Amazon Link](https://www.amazon.com/XunLiu-Button-Socket-Screws-BlackNickel/dp/B0756WTM1D/ref=sr_1_6?) |
-| M2.5x3mm | 4 | [Amazon Link](https://www.amazon.com/M2-5-0-45-Button-Socket-Screws-Quantity/dp/B0CG1LJ6LT/ref=sr_1_3?crid=UEMVWUB586Y0&dib=eyJ2IjoiMSJ9.4hnUppVhq3gkuYHudb8t97_9NtK2Vt1MZ08Ii3BWz-IX6IsMI3ub9kXsesH4oFJLRgBFTZgWHIEGtZ5_TlCst-QROR_mA-BVsRGEhU6sGaFoQ_Npodo0tsWDf5tN7BzfIGXRYuQ9Nq0f7pRc90kECXWf_Z7QuXW4hPBQmzg-bURY2dUYDqyKFIdR9N4NY3loLA7A3AkUemoAfc7JSrY9dhsXatG3jKoB9nGh39Xq648.jaeOjoNrotQOWE5NH4AtjuM8FYNViLyW8Vux_wzvgZI&dib_tag=se&keywords=m2.5x3&qid=1784740470&sprefix=m2.5x%2Caps%2C227&sr=8-3&th=1) |
+| M2x3mm | 4 | [Amazon Link](https://www.amazon.com/uxcell-100Pcs-Socket-Button-Machine/dp/B01N76IPXI/ref=sr_1_2?) |
 | M2x5mm Socket Head | 8 | [Amazon Link](https://www.amazon.com/Socket-Screws-Stainless-Thread-Spanner/dp/B0GHYKFVLC/ref=sr_1_3?) |
 | M2 Threaded Inserts | 8 | [Amazon Link](https://www.amazon.com/MECCANIXITY-Threaded-Printing-Electronic-M2x3-5x4mm/dp/B0F2FRSJQN/ref=sr_1_4?) |
