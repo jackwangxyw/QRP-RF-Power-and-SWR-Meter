@@ -158,7 +158,10 @@
 //  Worth it in the 2-10 W range, where the display shows two decimals and one
 //  LSB is only ~1.7x finer than the last digit, so raw counts visibly flicker.
 //  Result is scaled back to the 12-bit domain, so calibration is unaffected.
-#define ADC_OVERSAMPLE_BITS 2
+//  3 bits = 64 samples, halving the noise versus 16. Costs ~1.1 ms per channel
+//  against ~0.3 ms, which buys the shorter READOUT_TAU_MS below. 4 bits needs
+//  256 samples / 4.6 ms per channel and overruns the sample tick.
+#define ADC_OVERSAMPLE_BITS 3
 #define ADC_SAMPLE_DURATION 32    // source impedance is R3||R4 = 5k
 
 // ---------------------------------------------------------------------------
@@ -177,8 +180,11 @@
 //  READOUT: symmetric, feeds the numerals and SWR. Averaging ~tau/tick samples
 //  is what steadies the last decimal, which is worth only 1-2 ADC counts in the
 //  5-10 W range. Longer = steadier but laggier.
+//  A steady digit and a fast fall pull against each other, so the noise is
+//  bought down at the ADC (see ADC_OVERSAMPLE_BITS) rather than in here. That
+//  is what lets READOUT_TAU_MS be short enough to fall like the Rev 1 unit.
 #define ENVELOPE_TAU_MS     40    // bar and peak marker
-#define READOUT_TAU_MS      80    // numerals and SWR
+#define READOUT_TAU_MS      40    // numerals and SWR
 
 // ---------------------------------------------------------------------------
 //  Warnings - the offending numeral blinks, its label and unit stay put
