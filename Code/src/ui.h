@@ -8,7 +8,9 @@
 #include "compat.h"
 
 struct MeterState {
-    float    watts;        // forward power, derived from dbm
+    float    watts;        // forward power, derived from dbm. Smoothed readout.
+    float    wattsBar;     // same but off the fast envelope, so the bar can
+                           // show syllables while the numerals stay steady
     float    dbm;          // the calibrated quantity; NAN = no signal
     float    swr;          // NAN = no carrier, INFINITY = total reflection
     float    battVolts;

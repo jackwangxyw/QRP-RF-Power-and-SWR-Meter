@@ -209,7 +209,7 @@ void meter(const MeterState &s) {
     font::text(lx, l2, "SWR", font::SMALL);
 
 #if SHOW_POWER_BAR
-    const float pwrFrac = s.watts / PWR_BAR_FULL_SCALE;
+    const float pwrFrac = s.wattsBar / PWR_BAR_FULL_SCALE;
     hbar(PBAR_Y, pwrFrac, nullptr, 0);                        // continuous
   #if SHOW_PEAK_MARKER
     peakMark(PBAR_Y, s.peakFrac, pwrFrac);

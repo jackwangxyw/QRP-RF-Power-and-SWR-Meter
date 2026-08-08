@@ -20,8 +20,12 @@
 //  Pin map
 // ---------------------------------------------------------------------------
 #ifdef ARDUINO
-#define PIN_VFWD    PIN_PA1     // pin 11, via R3/R4 divider
-#define PIN_VREV    PIN_PA2     // pin 12, via R7/R8 divider
+//  T1's winding phasing, not the layout, decides which sense port carries the
+//  forward wave - and it lands opposite to the D1/D2 assignment on this board,
+//  so PA2 is forward with the radio on J1. Swapped here rather than rewinding a
+//  working coupler; the two detector chains are identical, so nothing else cares.
+#define PIN_VFWD    PIN_PA2     // pin 12, via R7/R8 divider
+#define PIN_VREV    PIN_PA1     // pin 11, via R3/R4 divider
 #define PIN_BUTTON  PIN_PA3     // pin 13, SW1 to GND
 // PA6 = SDA (J4.3), PA7 = SCL (J4.4) - see i2c.cpp
 #endif
@@ -162,12 +166,19 @@
 // ---------------------------------------------------------------------------
 #define SAMPLE_INTERVAL_MS  5     // 200 Hz detector sampling
 #define FRAME_INTERVAL_MS   33    // ~30 fps; only changed pages are pushed
-//  Envelope follower: instant attack, exponential decay, applied per sample.
-//  0.15 at a 5 ms tick is a ~31 ms time constant - rock steady on a carrier,
-//  but too quick to hold SSB syllable peaks; the reading will fall away
-//  between syllables. For proper PEP behaviour (~300 ms hold) use 0.017.
-//  Worth judging against a real signal before settling on a value.
-#define ENVELOPE_DECAY      0.15f
+//  Both filters below are driven by ELAPSED TIME, not by sample count. A frame
+//  push is tens of ms of bit-banged I2C, so the tick above cannot actually hold
+//  200 Hz - a per-sample coefficient stretched these constants by 5-10x and made
+//  them vary with display load. These are real milliseconds.
+//
+//  ENVELOPE: instant attack, exponential decay. Feeds the bar and peak marker,
+//  so it wants to be quick enough to show individual SSB syllables.
+//
+//  READOUT: symmetric, feeds the numerals and SWR. Averaging ~tau/tick samples
+//  is what steadies the last decimal, which is worth only 1-2 ADC counts in the
+//  5-10 W range. Longer = steadier but laggier.
+#define ENVELOPE_TAU_MS     40    // bar and peak marker
+#define READOUT_TAU_MS      80    // numerals and SWR
 
 // ---------------------------------------------------------------------------
 //  Warnings - the offending numeral blinks, its label and unit stay put

@@ -16,7 +16,12 @@ float dbmToWatts(float dbm);                // NAN in -> 0 out
 float countsToWatts(float counts);          // both of the above
 
 float computeSwr(float fwdW, float revW);   // NAN = no carrier, INF = total
-float envelopeStep(float env, float sample, float decay);  // instant attack
+// Time-driven filters. The coefficient comes from elapsed ms, so the constants
+// in config.h are real time constants and do not stretch when the display is
+// busy. envelopeMs has instant attack so a peak is never missed; readoutMs is
+// symmetric.
+float envelopeMs(float env, float sample, uint16_t dtMs, uint16_t tauMs);
+float readoutMs(float y,    float sample, uint16_t dtMs, uint16_t tauMs);
 
 // --- formatting ----------------------------------------------------------
 // Fixed-point, because avr-libc's printf drops float support unless you link

@@ -36,7 +36,8 @@ static Screen  screen   = SCREEN_METER;
 static bool    dbmMode  = false;
 static bool    haveOled = false;
 
-static float fwdEnv, revEnv;          // envelope-followed counts, 12-bit scale
+static float fwdEnv, revEnv;          // fast envelope, drives bar + peak marker
+static float fwdAvg, revAvg;          // smoothed, drives the numerals and SWR
 static float peakCounts;              // highest fwd since the last frame
 static float battV;
 static bool  fwdErr, revErr;          // last conversion on each channel faulted
@@ -65,9 +66,25 @@ static float readCounts(uint8_t pin, bool &err) {
     return (float)v / (float)(1 << ADC_OVERSAMPLE_BITS);
 }
 
-static void sample() {
-    fwdEnv = envelopeStep(fwdEnv, readCounts(PIN_VFWD, fwdErr), ENVELOPE_DECAY);
-    revEnv = envelopeStep(revEnv, readCounts(PIN_VREV, revErr), ENVELOPE_DECAY);
+//  Two filters off the same conversion: a fast envelope for the bar and peak
+//  marker, and a slower symmetric one for the numerals. dtMs is the real gap
+//  since the last call, which is well above SAMPLE_INTERVAL_MS whenever a frame
+//  is going out - hence time-driven rather than per-sample coefficients.
+//
+//  Below the noise floor the readout snaps rather than coasting down through its
+//  time constant. The detector RC is 0.2 ms, so no signal really does mean no
+//  signal, and crawling to zero over half a second just looks broken.
+static void sample(uint16_t dtMs) {
+    const float fwdRawC = readCounts(PIN_VFWD, fwdErr);
+    const float revRawC = readCounts(PIN_VREV, revErr);
+
+    fwdEnv = envelopeMs(fwdEnv, fwdRawC, dtMs, ENVELOPE_TAU_MS);
+    revEnv = envelopeMs(revEnv, revRawC, dtMs, ENVELOPE_TAU_MS);
+
+    fwdAvg = (fwdRawC < (float)NOISE_FLOOR_COUNTS)
+           ? fwdRawC : readoutMs(fwdAvg, fwdRawC, dtMs, READOUT_TAU_MS);
+    revAvg = (revRawC < (float)NOISE_FLOOR_COUNTS)
+           ? revRawC : readoutMs(revAvg, revRawC, dtMs, READOUT_TAU_MS);
 
     // Peak capture runs at the sample rate so an SSB syllable is never missed;
     // the hold and fall happen once a frame, where the timing is intuitive.
@@ -183,10 +200,10 @@ void setup() {
     haveOled = oled::begin();
     if (!haveOled) { delay(250); haveOled = oled::begin(); }
 
-    fwdEnv = readCounts(PIN_VFWD, fwdErr);
-    revEnv = readCounts(PIN_VREV, revErr);
+    fwdEnv = fwdAvg = readCounts(PIN_VFWD, fwdErr);
+    revEnv = revAvg = readCounts(PIN_VREV, revErr);
     peakCounts = fwdEnv;
-    sample();
+    sample(SAMPLE_INTERVAL_MS);
 
 #if ENABLE_SLEEP
     pitInit();
@@ -217,7 +234,11 @@ void loop() {
     // only), so acting on it would silently toggle units behind a dark panel.
     if (pstate <= PWR_DIM) serviceButton();
 
-    if (t - tSample >= SAMPLE_INTERVAL_MS) { tSample = t; sample(); }
+    uint32_t dt = t - tSample;
+    if (dt >= SAMPLE_INTERVAL_MS) {
+        tSample = t;
+        sample((uint16_t)(dt > 1000 ? 1000 : dt));   // cap after a sleep or splash
+    }
 
     if (fwdEnv >= (float)WAKE_COUNTS) power.poke(t);
     else if (pstate <= PWR_DIM && button.stable) power.poke(t);
@@ -232,13 +253,16 @@ void loop() {
 
     if (!haveOled || pstate >= PWR_BLANK) return;
 
+    // Numerals, SWR and the warnings all come off the smoothed value so they
+    // agree with each other; only the bar and the peak marker run off fwdEnv.
     MeterState s;
-    s.dbm       = countsToDbm(fwdEnv);       // the calibrated quantity
+    s.dbm       = countsToDbm(fwdAvg);       // the calibrated quantity
     s.watts     = dbmToWatts(s.dbm);
-    s.swr       = computeSwr(s.watts, countsToWatts(revEnv));
+    s.wattsBar  = countsToWatts(fwdEnv);
+    s.swr       = computeSwr(s.watts, countsToWatts(revAvg));
     s.battVolts = battV;
-    s.fwdRaw    = (uint16_t)(fwdEnv + 0.5f);
-    s.revRaw    = (uint16_t)(revEnv + 0.5f);
+    s.fwdRaw    = (uint16_t)(fwdAvg + 0.5f);
+    s.revRaw    = (uint16_t)(revAvg + 0.5f);
     s.fwdErr    = fwdErr;
     s.revErr    = revErr;
     s.dbmMode   = dbmMode;

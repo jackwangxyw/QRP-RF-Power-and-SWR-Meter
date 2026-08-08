@@ -31,10 +31,22 @@ float computeSwr(float fwd, float rev) {
     return (1.0f + g) / (1.0f - g);
 }
 
-// Instant attack so a peak is never missed, exponential decay so it stays
-// readable. See ENVELOPE_DECAY in config.h for the time constant.
-float envelopeStep(float env, float sample, float decay) {
-    return (sample >= env) ? sample : env + (sample - env) * decay;
+// Fraction of the gap to close in dtMs at a tauMs time constant. Linear stand-in
+// for 1-exp(-dt/tau) - within a few percent while dt < tau, and clamped to 1
+// beyond that so a long gap between samples simply lands on the new value
+// instead of overshooting. No expf() on an 8-bit core for this.
+static float timeCoeff(uint16_t dtMs, uint16_t tauMs) {
+    if (tauMs == 0 || dtMs >= tauMs) return 1.0f;
+    return (float)dtMs / (float)tauMs;
+}
+
+float envelopeMs(float env, float sample, uint16_t dtMs, uint16_t tauMs) {
+    if (sample >= env) return sample;                       // instant attack
+    return env + (sample - env) * timeCoeff(dtMs, tauMs);
+}
+
+float readoutMs(float y, float sample, uint16_t dtMs, uint16_t tauMs) {
+    return y + (sample - y) * timeCoeff(dtMs, tauMs);       // symmetric
 }
 
 // --- formatting ----------------------------------------------------------
