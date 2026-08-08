@@ -191,7 +191,7 @@
 // ---------------------------------------------------------------------------
 #define SWR_WARN_THRESHOLD   2.5f
 #define POWER_WARN_THRESHOLD 25.0f
-#define WARN_FLASH_MS        350   // half period of the blink
+#define WARN_FLASH_MS        175   // half period of the blink, so ~2.9 Hz
 #define SWR_MIN_POWER        0.05f // below this SWR is meaningless
 
 // ---------------------------------------------------------------------------
