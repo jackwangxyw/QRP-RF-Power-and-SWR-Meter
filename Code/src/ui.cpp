@@ -225,9 +225,13 @@ void cal(const MeterState &s) {
     const int16_t y1 = CAL_BAND1_Y + (CAL_BAND_H - nh) / 2;
     const int16_t y2 = CAL_BAND2_Y + (CAL_BAND_H - nh) / 2;
 
+    // A faulted conversion reads back as 0 counts, which is also what a dead
+    // input looks like. Say ERR instead so the two are never confused here.
     char v[8];
-    fmtU(v, s.fwdRaw); font::bigNum(nx, fw, y1, v, font::RIGHT);
-    fmtU(v, s.revRaw); font::bigNum(nx, fw, y2, v, font::RIGHT);
+    if (s.fwdErr) font::bigNum(nx, fw, y1, "ERR", font::RIGHT);
+    else { fmtU(v, s.fwdRaw); font::bigNum(nx, fw, y1, v, font::RIGHT); }
+    if (s.revErr) font::bigNum(nx, fw, y2, "ERR", font::RIGHT);
+    else { fmtU(v, s.revRaw); font::bigNum(nx, fw, y2, v, font::RIGHT); }
     font::text(BAR_X, y1 + (nh - 7) / 2, "VFWD", font::SMALL);
     font::text(BAR_X, y2 + (nh - 7) / 2, "VREV", font::SMALL);
     oled::flush();

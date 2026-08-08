@@ -39,6 +39,7 @@ static bool    haveOled = false;
 static float fwdEnv, revEnv;          // envelope-followed counts, 12-bit scale
 static float peakCounts;              // highest fwd since the last frame
 static float battV;
+static bool  fwdErr, revErr;          // last conversion on each channel faulted
 
 static uint32_t tSample, tFrame, tFlash;
 static bool     flashOn = true;
@@ -54,15 +55,19 @@ static PowerState   pstate = PWR_ACTIVE;
 //  samples cost one conversion sequence rather than a software loop. The
 //  result is scaled back to the 12-bit domain (keeping the fraction) so the
 //  calibration polynomial still takes plain 12-bit counts.
-static float readCounts(uint8_t pin) {
+//  The core signals faults as a negative return. Reporting that as 0 counts
+//  would be indistinguishable from a genuinely dead input, which is exactly the
+//  reading cal mode exists to be trusted on - so latch it and let ui::cal say so.
+static float readCounts(uint8_t pin, bool &err) {
     int32_t v = analogReadEnh(pin, ADC_RESOLUTION_BITS + ADC_OVERSAMPLE_BITS);
-    if (v < 0) return 0.0f;                       // core signals faults negative
+    err = (v < 0);
+    if (err) return 0.0f;
     return (float)v / (float)(1 << ADC_OVERSAMPLE_BITS);
 }
 
 static void sample() {
-    fwdEnv = envelopeStep(fwdEnv, readCounts(PIN_VFWD), ENVELOPE_DECAY);
-    revEnv = envelopeStep(revEnv, readCounts(PIN_VREV), ENVELOPE_DECAY);
+    fwdEnv = envelopeStep(fwdEnv, readCounts(PIN_VFWD, fwdErr), ENVELOPE_DECAY);
+    revEnv = envelopeStep(revEnv, readCounts(PIN_VREV, revErr), ENVELOPE_DECAY);
 
     // Peak capture runs at the sample rate so an SSB syllable is never missed;
     // the hold and fall happen once a frame, where the timing is intuitive.
@@ -156,6 +161,12 @@ static void applyState(PowerState from, PowerState to) {
 
 // ---------------------------------------------------------------------------
 void setup() {
+    // megaTinyCore 2.6.11 ORs the RTC prescaler group value into CTRLA
+    // unshifted (timers.h, _RTC_PRESCALE_VALUE), leaving PRESCALER at DIV1 - so
+    // the RTC ticks 32x fast and every millis() timeout fires 32x early.
+    while (RTC.STATUS & RTC_CTRLABUSY_bm) {}
+    RTC.CTRLA = RTC_RUNSTDBY_bm | RTC_PRESCALER_DIV32_gc | RTC_RTCEN_bm;
+
     button.init();
     pinMode(PIN_BUTTON, INPUT_PULLUP);
     pinMode(PIN_VFWD, INPUT);
@@ -172,8 +183,8 @@ void setup() {
     haveOled = oled::begin();
     if (!haveOled) { delay(250); haveOled = oled::begin(); }
 
-    fwdEnv = readCounts(PIN_VFWD);
-    revEnv = readCounts(PIN_VREV);
+    fwdEnv = readCounts(PIN_VFWD, fwdErr);
+    revEnv = readCounts(PIN_VREV, revErr);
     peakCounts = fwdEnv;
     sample();
 
@@ -228,6 +239,8 @@ void loop() {
     s.battVolts = battV;
     s.fwdRaw    = (uint16_t)(fwdEnv + 0.5f);
     s.revRaw    = (uint16_t)(revEnv + 0.5f);
+    s.fwdErr    = fwdErr;
+    s.revErr    = revErr;
     s.dbmMode   = dbmMode;
 
     bool warnPwr = s.watts > POWER_WARN_THRESHOLD;

@@ -15,6 +15,8 @@ struct MeterState {
     float    peakFrac;     // peak marker, 0..1 of PWR_BAR_FULL_SCALE; 0 = none
     uint16_t fwdRaw;       // rounded 12-bit counts, for calibration mode
     uint16_t revRaw;
+    bool     fwdErr;       // conversion faulted; cal shows ERR, not a bogus 0
+    bool     revErr;
     bool     dbmMode;      // unit toggle
     bool     blankPwr;     // warning blink, off phase
     bool     blankSwr;

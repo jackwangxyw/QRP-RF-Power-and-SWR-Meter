@@ -16,9 +16,13 @@
   #define BF_L      BIGF_MICHROMA_L
   #define BF_I      BIGF_MICHROMA_I
   #define BF_M      BIGF_MICHROMA_M
+  #define BF_E      BIGF_MICHROMA_E
+  #define BF_R      BIGF_MICHROMA_R
   #define BF_LW     BIGF_MICHROMA_LW
   #define BF_IW     BIGF_MICHROMA_IW
   #define BF_MW     BIGF_MICHROMA_MW
+  #define BF_EW     BIGF_MICHROMA_EW
+  #define BF_RW     BIGF_MICHROMA_RW
 #else
   #define BF_H BIGF_CUSTOM_H
   #define BF_P BIGF_CUSTOM_PAGES
@@ -32,9 +36,13 @@
   #define BF_L      BIGF_CUSTOM_L
   #define BF_I      BIGF_CUSTOM_I
   #define BF_M      BIGF_CUSTOM_M
+  #define BF_E      BIGF_CUSTOM_E
+  #define BF_R      BIGF_CUSTOM_R
   #define BF_LW     BIGF_CUSTOM_LW
   #define BF_IW     BIGF_CUSTOM_IW
   #define BF_MW     BIGF_CUSTOM_MW
+  #define BF_EW     BIGF_CUSTOM_EW
+  #define BF_RW     BIGF_CUSTOM_RW
 #endif
 
 namespace font {
@@ -75,6 +83,8 @@ static Glyph glyphFor(char c) {
     if (c == 'L') return { BF_L, BF_LW };
     if (c == 'I') return { BF_I, BF_IW };
     if (c == 'M') return { BF_M, BF_MW };
+    if (c == 'E') return { BF_E, BF_EW };
+    if (c == 'R') return { BF_R, BF_RW };
     return          { BF_DASH, BF_DASHW };        // '-' and anything unexpected
 }
 
