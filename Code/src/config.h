@@ -42,8 +42,13 @@
 //  Panel brightness, 0x00..0xFF (SSD1306 contrast register). Drives segment
 //  current, so it is most of what the display costs. DIM is what the meter
 //  falls back to after SLEEP_DIM_MS with no RF.
+//
+//  Measured on hardware: this register saves real current but is not a usable
+//  brightness control. 0x00 is unreadable and everything from 0x04 to 0x10
+//  looks alike, so DIM is a power state, not a visible one. Don't bisect it
+//  again - BLANK turning the panel off is the change you can actually see.
 #define OLED_CONTRAST_ACTIVE  0xCF
-#define OLED_CONTRAST_DIM     0x00    // register floor; still lit, just minimum
+#define OLED_CONTRAST_DIM     0x10
 
 //  Charge pump settling after 0xAF before the panel is readable. Datasheet
 //  asks for 100 ms; most modules are quicker, so this is worth trimming once
@@ -237,8 +242,8 @@
 //  Counts on VFWD that count as "RF present". Must clear NOISE_FLOOR_COUNTS
 //  with margin or the meter will never settle; 40 counts is about 39 mW, well
 //  under the ~0.25 W where readings become trustworthy.
-//  >>> Check this against a real board: read VFWD in cal mode with nothing
-//  >>> connected. If the resting count is near 40, raise this or it never sleeps.
+//  Measured 8 Aug 2026 on the Rev 2 board: resting VFWD is 0 counts with
+//  nothing connected, so 40 has the full margin and the meter sleeps reliably.
 #define WAKE_COUNTS          40
 
 //  How often STANDBY wakes to look for RF. The PIT divides 32.768 kHz by
