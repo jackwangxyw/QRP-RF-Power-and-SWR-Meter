@@ -129,6 +129,9 @@ static void powerText(char *val, char *unit, float w, float dbm, bool dbmMode) {
     bool lim = w >= POWER_LIMIT_WATTS;
     if (dbmMode) {
         if (lim)            { val[0]='L'; val[1]='I'; val[2]='M'; val[3]=0; }
+        // Not a zero: 0 dBm is 1 mW, so a numeric zero here would read as a
+        // real measurement. Below the noise floor there is no reading, and dbm
+        // is NAN in any case.
         else if (w <= 0.0f) { val[0]='-'; val[1]='-'; val[2]='-'; val[3]=0; }
         else                fmt(val, dbm, 1);      // already the native quantity
         unit[0]='d'; unit[1]='B'; unit[2]='m'; unit[3]=0;

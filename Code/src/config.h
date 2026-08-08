@@ -43,7 +43,7 @@
 //  current, so it is most of what the display costs. DIM is what the meter
 //  falls back to after SLEEP_DIM_MS with no RF.
 #define OLED_CONTRAST_ACTIVE  0xCF
-#define OLED_CONTRAST_DIM     0x10
+#define OLED_CONTRAST_DIM     0x00    // register floor; still lit, just minimum
 
 //  Charge pump settling after 0xAF before the panel is readable. Datasheet
 //  asks for 100 ms; most modules are quicker, so this is worth trimming once
@@ -216,21 +216,22 @@
 //  meter from BLANK or STANDBY.
 //
 //    ACTIVE           full brightness, 200 Hz sampling      ~25 mA
-//    DIM     30 s     OLED_CONTRAST_DIM, still sampling     ~15 mA   ~5 ms wake
-//    BLANK    2 min   panel off, MCU still sampling         ~4 mA  ~100 ms wake
+//    DIM      2 min   OLED_CONTRAST_DIM, still sampling     ~15 mA   ~5 ms wake
+//    BLANK   10 min   panel off, MCU still sampling         ~4 mA  ~100 ms wake
 //    STANDBY  1 hour  panel off, MCU asleep, PIT polling    ~30 uA ~350 ms wake
 //
 //  Sampling stays at the full rate in BLANK: the MCU is awake and burning
 //  milliamps either way, so slowing the ADC would buy nothing and only add
 //  latency. Sleeping between samples is what STANDBY is for.
 //
-//  BLANK deliberately runs for the best part of an hour. It costs ~3.4 mAh of a
-//  1000 mAh cell, and in exchange a real operating session never reaches
-//  STANDBY at all - so wake stays at ~100 ms throughout, and STANDBY becomes
-//  purely the forgot-to-switch-off case where its ~350 ms does not matter.
+//  BLANK deliberately runs for most of an hour: the 50 minutes between it and
+//  the STANDBY threshold cost ~3.3 mAh of a 1000 mAh cell, and in exchange a
+//  real operating session never reaches STANDBY at all - so wake stays at
+//  ~100 ms throughout, and STANDBY becomes purely the forgot-to-switch-off
+//  case where its ~350 ms does not matter.
 #define ENABLE_SLEEP         1
-#define SLEEP_DIM_MS         60000UL
-#define SLEEP_BLANK_MS       120000UL
+#define SLEEP_DIM_MS         120000UL
+#define SLEEP_BLANK_MS       600000UL
 #define SLEEP_STANDBY_MS     3600000UL
 
 //  Counts on VFWD that count as "RF present". Must clear NOISE_FLOOR_COUNTS
