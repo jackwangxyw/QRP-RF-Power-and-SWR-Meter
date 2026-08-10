@@ -5,7 +5,7 @@
 //  with a quartic calibration curve, shows power, SWR and battery on a
 //  128x64 SSD1306.
 //
-//    short press  ->  watts / dBm
+//    short press  ->  watts / dBm  (remembered in EEPROM across power cycles)
 //    long press   ->  calibration mode (raw ADC counts)
 //
 //  Dims, blanks and finally sleeps when there is no RF; returning RF wakes it.
@@ -22,6 +22,10 @@
 #include "ssd1306.h"
 #include "ui.h"
 #include "meter.h"      // pure logic, unit-tested via `pio test -e test`
+
+#if SAVE_UNITS
+  #include <EEPROM.h>
+#endif
 
 // Sleep is only correct if millis() survives standby, which needs the RTC as
 // the millis source (see build_flags). If something else claims it, fail here
@@ -98,6 +102,26 @@ static void sample(uint16_t dtMs) {
 }
 
 // ---------------------------------------------------------------------------
+//  Saved settings
+// ---------------------------------------------------------------------------
+//  Only the unit choice is persisted. The screen deliberately is not: cal mode
+//  is a diagnostic, and booting into it because that is where you left off
+//  would look like a fault.
+static void loadUnits() {
+#if SAVE_UNITS
+    dbmMode = (EEPROM.read(EE_ADDR_UNITS) == 1);   // 0xFF (erased) -> watts
+#endif
+}
+
+//  ~11 ms of stalled CPU when the byte actually changes, which is once per
+//  button press and invisible next to the frame it triggers.
+static void saveUnits() {
+#if SAVE_UNITS
+    EEPROM.update(EE_ADDR_UNITS, dbmMode ? 1 : 0);
+#endif
+}
+
+// ---------------------------------------------------------------------------
 //  Button
 // ---------------------------------------------------------------------------
 static Button button;
@@ -105,7 +129,7 @@ static Button button;
 static void serviceButton() {
     switch (button.update(digitalRead(PIN_BUTTON) == LOW, millis())) {
     case BTN_SHORT:
-        if (screen == SCREEN_METER) { dbmMode = !dbmMode; tFrame = 0; }
+        if (screen == SCREEN_METER) { dbmMode = !dbmMode; saveUnits(); tFrame = 0; }
         break;
     case BTN_LONG:
         screen = (screen == SCREEN_METER) ? SCREEN_CAL : SCREEN_METER;
@@ -183,6 +207,8 @@ void setup() {
     // the RTC ticks 32x fast and every millis() timeout fires 32x early.
     while (RTC.STATUS & RTC_CTRLABUSY_bm) {}
     RTC.CTRLA = RTC_RUNSTDBY_bm | RTC_PRESCALER_DIV32_gc | RTC_RTCEN_bm;
+
+    loadUnits();        // before the first frame, so it never shows watts first
 
     button.init();
     pinMode(PIN_BUTTON, INPUT_PULLUP);

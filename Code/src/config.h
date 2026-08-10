@@ -230,6 +230,20 @@
 #define BUTTON_LONG_PRESS_MS 700
 
 // ---------------------------------------------------------------------------
+//  Saved settings - one EEPROM byte, so the unit choice survives a power cycle
+// ---------------------------------------------------------------------------
+//  Stored as 1 = dBm, 0 = watts. An erased cell reads 0xFF, which falls through
+//  to watts, so a virgin chip boots exactly as it always did and there is no
+//  magic number to check. Written on the toggle via EEPROM.update(), which
+//  skips the cell if it already holds the value - so the 100k-cycle endurance
+//  is only spent on actual changes.
+//
+//  platformio.ini sets eesave=yes, so this also survives reflashing over UPDI.
+//  Set to 0 to go back to always booting in watts.
+#define SAVE_UNITS       1
+#define EE_ADDR_UNITS    0
+
+// ---------------------------------------------------------------------------
 //  Battery - read from the ADC's internal VDD/10 channel, no extra parts
 // ---------------------------------------------------------------------------
 #define BATT_LOW_VOLTS       3.30f
