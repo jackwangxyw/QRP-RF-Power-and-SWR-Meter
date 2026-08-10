@@ -205,11 +205,15 @@
 //  Holds for PEAK_HOLD_MS after each new peak, then falls back to the live
 //  reading at PEAK_FALL_WPS. On voice every syllable re-arms the hold, so the
 //  marker stays pinned at PEP for as long as you are talking and only starts
-//  falling once you stop - which is what makes it readable when ENVELOPE_DECAY
-//  is set fast enough to be twitchy.
+//  falling once you stop - which is what makes it readable when ENVELOPE_TAU_MS
+//  is short enough to be twitchy.
+//
+//  The hold has to outlast the gaps between syllables or the marker sags
+//  mid-sentence. Speech gaps run 100-300 ms, words up to ~500 ms, so 1 s still
+//  only lets it fall at a sentence break.
 #define SHOW_PEAK_MARKER  1
-#define PEAK_HOLD_MS      2000
-#define PEAK_FALL_WPS     8.0f   // watts per second; 25 W -> 0 in ~3 s
+#define PEAK_HOLD_MS      1000
+#define PEAK_FALL_WPS     16.0f  // watts per second; 25 W -> 0 in ~1.6 s
 #define PEAK_MARKER_W     2      // marker width in px
 #define PEAK_GAP          2      // min clear px between bar and marker, or hide
 
