@@ -11,7 +11,7 @@ float countsToDbm(float x) {
     d = d * l + CAL_B;
     d = d * l + CAL_C;
     d = d * l + CAL_D;
-    d = d * l + CAL_E;
+    d = d * l + CAL_K;
     return d + CAL_OFFSET_DB;
 }
 

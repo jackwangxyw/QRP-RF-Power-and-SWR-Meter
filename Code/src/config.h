@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 //  QRP RF Power and SWR Meter - Rev 2
-//  Every tunable lives here. To calibrate, only CAL_A..CAL_E need touching.
+//  Every tunable lives here. To calibrate, only CAL_A..CAL_K need touching.
 // ---------------------------------------------------------------------------
 #pragma once
 
@@ -97,7 +97,7 @@
 // ---------------------------------------------------------------------------
 //  Calibration
 // ---------------------------------------------------------------------------
-//      dBm = A*L^4 + B*L^3 + C*L^2 + D*L + E     where L = log10(raw count)
+//      dBm = A*L^4 + B*L^3 + C*L^2 + D*L + K     where L = log10(raw count)
 //
 //  Watts is then derived: W = 10^((dBm - 30) / 10).
 //
@@ -117,21 +117,17 @@
 //  (same diode, R1||R2 == R5||R6 == 50R, R3/R4 == R7/R8).
 //
 //  To calibrate: record dBm against raw count, then in Desmos run
-//      y1 ~ a(log(x1))^4 + b(log(x1))^3 + c(log(x1))^2 + d*log(x1) + e
-//  with x1 = counts and y1 = dBm. Paste a..e into A..E below.
+//      y1 ~ a(log(x1))^4 + b(log(x1))^3 + c(log(x1))^2 + d*log(x1) + k
+//  with x1 = counts and y1 = dBm. Paste a..k into A..K below.
 //
 //  NOTE: the fit is against raw counts, so these constants are tied to the
 //  2.5 V reference and the /2 divider. Change either and they are wrong.
-//
-//  The shipped values are a refit of the previous watts-domain curve into this
-//  form - same response, new representation. They are still borrowed, not
-//  measured, and want replacing with real bench data.
 // ---------------------------------------------------------------------------
-#define CAL_A  -3.558687e-01f
-#define CAL_B   3.941184e+00f
-#define CAL_C  -1.359802e+01f
-#define CAL_D   2.977850e+01f
-#define CAL_E  -1.072073e+01f
+#define CAL_A  -8.203714e-01f
+#define CAL_B   8.025582e+00f
+#define CAL_C  -2.459699e+01f
+#define CAL_D   3.556299e+01f
+#define CAL_K  -1.815972e+00f
 
 //  Trim for a consistent error. In a dBm-native curve a fixed percentage error
 //  is a fixed dB offset, so this is simply added: +0.5 makes every reading
